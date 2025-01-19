@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package paymentservice;
+
+option go_package = "microservices-system/payment/paymentservice;paymentservice";
+
+message PaymentRequest {
+  string order_id = 1;
+  float amount = 2;
+}
+
+message PaymentResponse {
+  string status = 1;
+  string message = 2;
+}
+
+service PaymentService {
+  rpc ProcessPayment(PaymentRequest) returns (PaymentResponse);
+}

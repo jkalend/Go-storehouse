@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package inventoryservice;
+
+option go_package = "microservices-system/inventory/inventoryservice;inventoryservice";
+
+message InventoryCheckRequest {
+  string product_id = 1;
+  int32 quantity = 2;
+}
+
+message InventoryCheckResponse {
+  bool in_stock = 1;
+  string message = 2;
+}
+
+service InventoryService {
+  rpc CheckInventory(InventoryCheckRequest) returns (InventoryCheckResponse);
+}
