@@ -22,4 +22,5 @@ message OrderResponse {
 
 service OrderService {
   rpc PlaceOrder(OrderRequest) returns (OrderResponse);
+  rpc GetResponse(OrderResponse) returns (OrderResponse);
 }
