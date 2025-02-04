@@ -1,24 +1,27 @@
-package main
+package server
 
 import (
 	"context"
 	"fmt"
-	"log"
-	"net"
-
-	"first/microservices-system/inventory/inventoryservice"
-	"first/microservices-system/order/orderservice"
-	"first/microservices-system/payment/paymentservice"
 	"google.golang.org/grpc"
+	"log"
+	"storehouse/microservices-system/inventory/inventoryservice"
+	"storehouse/microservices-system/order/orderservice"
+	"storehouse/microservices-system/payment/paymentservice"
 )
 
-type orderServer struct {
+type OrderServer struct {
 	orderservice.OrderServiceServer
+	logger *log.Logger
 }
 
-func (s *orderServer) PlaceOrder(ctx context.Context, req *orderservice.OrderRequest) (*orderservice.OrderResponse, error) {
+func NewOrderServer(logger *log.Logger) *OrderServer {
+	return &OrderServer{logger: logger}
+}
+
+func (s *OrderServer) PlaceOrder(ctx context.Context, req *orderservice.OrderRequest) (*orderservice.OrderResponse, error) {
 	// Check inventory
-	inventoryConn, err := grpc.Dial("localhost:50052", grpc.WithInsecure())
+	inventoryConn, err := grpc.NewClient("localhost:50052")
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to inventory service: %v", err)
 	}
@@ -34,11 +37,16 @@ func (s *orderServer) PlaceOrder(ctx context.Context, req *orderservice.OrderReq
 	}
 
 	// Process payment
-	paymentConn, err := grpc.Dial("localhost:50053", grpc.WithInsecure())
+	paymentConn, err := grpc.NewClient("localhost:50053")
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to payment service: %v", err)
 	}
-	defer paymentConn.Close()
+	defer func(paymentConn *grpc.ClientConn) {
+		err := paymentConn.Close()
+		if err != nil {
+			s.logger.Printf("failed to close payment connection: %v", err)
+		}
+	}(paymentConn)
 
 	paymentClient := paymentservice.NewPaymentServiceClient(paymentConn)
 	paymentRes, err := paymentClient.ProcessPayment(ctx, &paymentservice.PaymentRequest{
@@ -52,17 +60,7 @@ func (s *orderServer) PlaceOrder(ctx context.Context, req *orderservice.OrderReq
 	return &orderservice.OrderResponse{Status: "SUCCESS", Message: "Order placed successfully"}, nil
 }
 
-func main() {
-	server := grpc.NewServer()
-	orderservice.RegisterOrderServiceServer(server, &orderServer{})
-
-	listener, err := net.Listen("tcp", ":50051")
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
-
-	log.Println("Order Service is running on port 50051...")
-	if err := server.Serve(listener); err != nil {
-		log.Fatalf("failed to serve: %v", err)
-	}
+func (s *OrderServer) GetResponse(ctx context.Context, res *orderservice.OrderResponse) (*orderservice.OrderResponse, error) {
+	s.logger.Printf("Received response: Status=%s, Message=%s", res.Status, res.Message)
+	return &orderservice.OrderResponse{Status: res.GetStatus(), Message: res.GetMessage()}, nil
 }
