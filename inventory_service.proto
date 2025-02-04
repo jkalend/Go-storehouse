@@ -9,11 +9,45 @@ message InventoryCheckRequest {
   int32 quantity = 2;
 }
 
+message InventoryCreateRequest {
+  string product_id = 1;
+  int32 quantity = 2;
+}
+
+message InventoryDeleteRequest {
+  string product_id = 1;
+}
+
+message InventoryModifyRequest {
+  string product_id = 1;
+  int32 quantity = 2;
+  bool add = 3;
+  bool remove = 4;
+}
+
+message InventoryModifyResponse {
+  string message = 1;
+  string status = 2;
+}
+
 message InventoryCheckResponse {
   bool in_stock = 1;
   string message = 2;
+  string status = 3;
 }
+
+message InventoryCreateResponse {
+  string message = 1;
+  string status = 2;
+}
+
+message InventoryDeleteResponse {
+  string message = 1;
+  string status = 2;
+}
+
 
 service InventoryService {
   rpc CheckInventory(InventoryCheckRequest) returns (InventoryCheckResponse);
+  rpc ModifyInventory(InventoryModifyRequest) returns (InventoryModifyResponse);
 }
