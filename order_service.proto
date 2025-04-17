@@ -4,23 +4,87 @@ package orderservice;
 
 option go_package = "microservices-system/order/orderservice;orderservice";
 
+message CreateUserRequest {
+  string name = 1;
+  string email = 2;
+  string password = 3;
+}
+
+message DeleteUserRequest {
+  int32 customer_id = 1;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message ListOrdersRequest {
+  int32 customer_id = 1;
+}
+
+message GetOrderStatusRequest {
+  int32 order_id = 1;
+}
+
+message PayOrderRequest {
+  int32 order_id = 1;
+}
+
 message OrderRequest {
-  string order_id = 1;
-  string customer_id = 2;
-  repeated OrderItem items = 3;
+  int32 customer_id = 1;
+  repeated OrderItem items = 2;
 }
 
 message OrderItem {
-  string product_id = 1;
+  int32 product_id = 1;
   int32 quantity = 2;
 }
 
 message OrderResponse {
-  string status = 1;
+  int32 order_id = 1;
+  string status = 2;
+  string message = 3;
+}
+
+message CreateUserResponse {
+  int32 customer_id = 1;
+}
+
+message DeleteUserResponse {
+  string message = 1;
+  string status = 2;
+}
+
+message LoginResponse {
+  int32 customer_id = 1;
   string message = 2;
+  string status = 3;
+}
+
+message ListOrdersResponse {
+  repeated OrderResponse orders = 1;
+}
+
+message GetOrderStatusResponse {
+  int32 order_id = 1;
+  string status = 2;
+  string message = 3;
+}
+
+message PayOrderResponse {
+  int32 order_id = 1;
+  string status = 2;
+  string message = 3;
 }
 
 service OrderService {
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+  rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc ListOrders(ListOrdersRequest) returns (ListOrdersResponse);
+  rpc GetOrderStatus(GetOrderStatusRequest) returns (GetOrderStatusResponse);
+  rpc PayOrder(PayOrderRequest) returns(PayOrderResponse);
   rpc PlaceOrder(OrderRequest) returns (OrderResponse);
   rpc GetResponse(OrderResponse) returns (OrderResponse);
 }

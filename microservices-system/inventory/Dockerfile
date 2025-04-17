@@ -11,10 +11,10 @@ RUN go mod tidy
 # Copy the rest of the application files
 COPY . .
 
-WORKDIR /app/microservices-system/order
+WORKDIR /app/microservices-system/inventory
 
 # Build the Go application
-RUN go build -o order-service .
+RUN go build -o inventory-service .
 
 # Use a lightweight image for the final container
 FROM ubuntu:22.10
@@ -23,14 +23,16 @@ FROM ubuntu:22.10
 WORKDIR /app
 
 # Copy the compiled binary from the builder stage
-COPY --from=builder /app/microservices-system/order/order-service .
+COPY --from=builder /app/microservices-system/inventory/inventory-service .
+
+# copy the DB init files
+COPY --from=builder /app/microservices-system/inventory/server/db server/db
 
 ENV POSTGRESQL_USER='meowiiik'
 ENV POSTGRESQL_PASSWORD='meowiiik#397Ang7Rt'
-ENV INVENTORY_HOST=inventory-service
 
 # Expose gRPC port
-EXPOSE 50051
+EXPOSE 50052
 
 # Command to run the application
-CMD ["./order-service"]
+CMD ["./inventory-service"]

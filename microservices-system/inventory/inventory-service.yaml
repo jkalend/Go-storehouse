@@ -1,28 +1,26 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: order-service
+  name: inventory-service
   labels:
-    app: order-service
+    app: inventory-service
 spec:
-  replicas: 1  # Adjust based on load
+  replicas: 1
   selector:
     matchLabels:
-      app: order-service
+      app: inventory-service
   template:
     metadata:
       labels:
-        app: order-service
+        app: inventory-service
     spec:
       containers:
-        - name: order-service
-          image: order-service:latest  # Replace with your actual image
+        - name: inventory-service
+          image: inventory-service:latest
           imagePullPolicy: Never
           ports:
-            - containerPort: 50051  # gRPC default port
+            - containerPort: 50052
           env:
-            - name: INVENTORY_SERVICE_HOST
-              value: "inventory-service"
             - name: POSTGRESQL_USER
               valueFrom:
                 secretKeyRef:
@@ -33,8 +31,6 @@ spec:
                 secretKeyRef:
                   name: postgres-secret
                   key: password
-#            - name: PAYMENT_SERVICE_HOST
-#              value: "payment-service"
           resources:
             limits:
               memory: "256Mi"
@@ -44,12 +40,12 @@ spec:
               cpu: "250m"
 #          livenessProbe:
 #            exec:
-#              command: ["grpc_health_probe", "-addr=:50051"]
-#            initialDelaySeconds: 3
+#              command: ["grpc_health_probe", "-addr=:50052"]
+#            initialDelaySeconds: 10
 #            periodSeconds: 10
 #          readinessProbe:
 #            exec:
-#              command: ["grpc_health_probe", "-addr=:50051"]
+#              command: ["grpc_health_probe", "-addr=:50052"]
 #            initialDelaySeconds: 3
 #            periodSeconds: 10
 
@@ -57,12 +53,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: order-service
+  name: inventory-service
 spec:
   selector:
-    app: order-service
+    app: inventory-service
   ports:
-    - port: 50051
-      targetPort: 50051
-      nodePort: 30051
+    - port: 50052
+      targetPort: 50052
+      nodePort: 30052
   type: NodePort

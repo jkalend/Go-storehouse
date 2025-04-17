@@ -4,25 +4,39 @@ package inventoryservice;
 
 option go_package = "microservices-system/inventory/inventoryservice;inventoryservice";
 
-message InventoryCheckRequest {
-  string product_id = 1;
-  int32 quantity = 2;
+message InventoryListRequest {
+  uint32 page = 1;
+}
+
+message InventoryGetDetailRequest {
+  int32 product_id = 1;
 }
 
 message InventoryCreateRequest {
-  string product_id = 1;
-  int32 quantity = 2;
+  string name = 1;
+  float price = 2;
+  int32 quantity = 3;
 }
 
 message InventoryDeleteRequest {
-  string product_id = 1;
+  int32 product_id = 1;
 }
 
 message InventoryModifyRequest {
-  string product_id = 1;
+  int32 product_id = 1;
   int32 quantity = 2;
-  bool add = 3;
-  bool remove = 4;
+}
+
+message InventoryGetDetailResponse {
+  int32 product_id = 1;
+  string name = 2;
+  string description = 3;
+  int32 quantity = 4;
+  float price = 5;
+}
+
+message InventoryListResponse {
+  repeated InventoryCheckResponse inventory = 1;
 }
 
 message InventoryModifyResponse {
@@ -31,14 +45,16 @@ message InventoryModifyResponse {
 }
 
 message InventoryCheckResponse {
-  bool in_stock = 1;
-  string message = 2;
-  string status = 3;
+  int32 product_id = 1;
+  string name = 2;
+  int32 quantity = 3;
+  float price = 4;
 }
 
 message InventoryCreateResponse {
-  string message = 1;
-  string status = 2;
+  int32 product_id = 1;
+  string message = 2;
+  string status = 3;
 }
 
 message InventoryDeleteResponse {
@@ -46,8 +62,23 @@ message InventoryDeleteResponse {
   string status = 2;
 }
 
+message InventoryStockRequest {
+  int32 product_id = 1;
+  int32 quantity = 2;
+}
+
+message InventoryStockResponse {
+  int32 product_id = 1;
+  float price = 2;
+  bool inStock = 3;
+}
+
 
 service InventoryService {
-  rpc CheckInventory(InventoryCheckRequest) returns (InventoryCheckResponse);
+  rpc ListInventory(InventoryListRequest) returns (InventoryListResponse);
+  rpc GetDetails(InventoryGetDetailRequest) returns (InventoryGetDetailResponse);
+  rpc CheckStock(InventoryStockRequest) returns (InventoryStockResponse);
   rpc ModifyInventory(InventoryModifyRequest) returns (InventoryModifyResponse);
+  rpc CreateInventory(InventoryCreateRequest) returns (InventoryCreateResponse);
+  rpc DeleteInventory(InventoryDeleteRequest) returns (InventoryDeleteResponse);
 }
